@@ -1,71 +1,68 @@
+import { useEffect, useState } from 'react'
+import Hero from './components/Hero'
+import LoadingScreen from './components/LoadingScreen'
+import CookieGate from './components/CookieGate'
+import AdminLogin from './components/AdminLogin'
+import AdminBar from './components/AdminBar'
+import { AboutSection, NewsSection, ExclusivesSection, ProductionSection, PartnersAndApply, StreamingSection } from './components/Sections'
+
 function App() {
+  const [loading, setLoading] = useState(true)
+  const [askAdmin, setAskAdmin] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
+  const [token, setToken] = useState(localStorage.getItem('animal_admin_token') || '')
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 1200)
+    return () => clearTimeout(t)
+  }, [])
+
+  const onCookieChoice = ({ admin }) => {
+    setAskAdmin(false)
+    if (admin) setShowLogin(true)
+  }
+
+  const isAdmin = Boolean(token)
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Subtle pattern overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.05),transparent_50%)]"></div>
+    <div className="min-h-screen bg-black">
+      {loading && <LoadingScreen onFinish={() => setLoading(false)} />}
+      {!loading && askAdmin && <CookieGate onChoice={onCookieChoice} />}
+      {showLogin && <AdminLogin onSuccess={(tkn)=>{ setToken(tkn); setShowLogin(false); }} />}
 
-      <div className="relative min-h-screen flex items-center justify-center p-8">
-        <div className="max-w-2xl w-full">
-          {/* Header with Flames icon */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center mb-6">
-              <img
-                src="/flame-icon.svg"
-                alt="Flames"
-                className="w-24 h-24 drop-shadow-[0_0_25px_rgba(59,130,246,0.5)]"
-              />
-            </div>
-
-            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
-              Flames Blue
-            </h1>
-
-            <p className="text-xl text-blue-200 mb-6">
-              Build applications through conversation
-            </p>
+      {/* Navbar */}
+      <header className="sticky top-0 z-20 bg-black/70 backdrop-blur border-b border-orange-500/20">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded bg-gradient-to-br from-orange-600 to-orange-400 text-black font-extrabold grid place-items-center">A</div>
+            <span className="text-orange-100 font-semibold">Animal Studios</span>
           </div>
-
-          {/* Instructions */}
-          <div className="bg-slate-800/50 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-8 shadow-xl mb-6">
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                1
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Describe your idea</h3>
-                <p className="text-blue-200/80 text-sm">Use the chat panel on the left to tell the AI what you want to build</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                2
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Watch it build</h3>
-                <p className="text-blue-200/80 text-sm">Your app will appear in this preview as the AI generates the code</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-lg flex items-center justify-center font-bold">
-                3
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">Refine and iterate</h3>
-                <p className="text-blue-200/80 text-sm">Continue the conversation to add features and make changes</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="text-center">
-            <p className="text-sm text-blue-300/60">
-              No coding required • Just describe what you want
-            </p>
-          </div>
+          <nav className="hidden md:flex items-center gap-6 text-orange-200/80">
+            <a href="#about" className="hover:text-orange-400 transition-colors">About</a>
+            <a href="#news" className="hover:text-orange-400 transition-colors">News</a>
+            <a href="#exclusives" className="hover:text-orange-400 transition-colors">Exclusives</a>
+            <a href="#production" className="hover:text-orange-400 transition-colors">Production</a>
+            <a href="#partner" className="hover:text-orange-400 transition-colors">Partner/Bewerbung</a>
+            <a href="#streaming" className="hover:text-orange-400 transition-colors">Streaming</a>
+          </nav>
+          <button onClick={()=>setAskAdmin(true)} className="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-500 text-sm">Zugang</button>
         </div>
-      </div>
+      </header>
+
+      <Hero />
+
+      <main>
+        <AboutSection isAdmin={isAdmin} token={token} />
+        <NewsSection isAdmin={isAdmin} token={token} />
+        <ExclusivesSection isAdmin={isAdmin} token={token} />
+        <ProductionSection isAdmin={isAdmin} token={token} />
+        <PartnersAndApply isAdmin={isAdmin} token={token} />
+        <StreamingSection isAdmin={isAdmin} token={token} />
+      </main>
+
+      {isAdmin && <AdminBar onCreate={(c)=>{}} />}
+
+      <footer className="py-8 text-center text-orange-300/60 bg-black border-t border-orange-500/10">© {new Date().getFullYear()} Animal Studios</footer>
     </div>
   )
 }
